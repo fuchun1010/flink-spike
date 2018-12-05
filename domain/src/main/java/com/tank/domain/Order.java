@@ -14,4 +14,6 @@ public class Order {
 
   private double price;
 
+  private long timeStamp;
+
 }
