@@ -1,0 +1,12 @@
+.idea
+
+stream/target
+stream/stream.iml
+
+flink-spike.iml
+
+domain/target
+domain/domain.iml
+
+producer/producer.iml
+producer/target
