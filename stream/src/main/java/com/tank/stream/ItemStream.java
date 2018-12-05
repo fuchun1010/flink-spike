@@ -15,11 +15,9 @@ public class ItemStream implements SourceFunction<String> {
   @Override
   public void run(SourceContext<String> ctx) throws Exception {
 
-    val orders = random.nextInt(5);
-
     while (isContinue) {
       val code = "s00" + sno.getAndIncrement();
-
+      val orders = random.nextInt(5);
       for (int i = 0; i < orders; i++) {
         val item = new Item();
         item.setOrderNo(code);
