@@ -10,6 +10,7 @@ import org.apache.flink.api.common.functions.JoinFunction;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
@@ -68,22 +69,24 @@ public class Stream {
       }).keyBy(0);
 
 
-      DataStream<Tuple2<String, String>> joinedStream = orderStream.join(itemStream).where(new KeySelector<Tuple2<String, Order>, String>() {
-        @Override
-        public String getKey(Tuple2<String, Order> order) throws Exception {
-          return order.f0;
-        }
-      }).equalTo(new KeySelector<Tuple2<String, Item>, String>() {
-        @Override
-        public String getKey(Tuple2<String, Item> item) throws Exception {
-          return item.f0;
-        }
-      }).window(TumblingEventTimeWindows.of(Time.seconds(5))).apply(new JoinFunction<Tuple2<String, Order>, Tuple2<String, Item>, Tuple2<String, String>>() {
-        @Override
-        public Tuple2<String, String> join(Tuple2<String, Order> first, Tuple2<String, Item> second) throws Exception {
-          return new Tuple2<>("order", first.f0);
-        }
-      });
+      DataStream<Tuple3<String, String, String>> joinedStream = orderStream
+          .join(itemStream).where(new KeySelector<Tuple2<String, Order>, String>() {
+            @Override
+            public String getKey(Tuple2<String, Order> order) throws Exception {
+              return order.f0;
+            }
+          })
+          .equalTo(new KeySelector<Tuple2<String, Item>, String>() {
+            @Override
+            public String getKey(Tuple2<String, Item> item) throws Exception {
+              return item.f0;
+            }
+          }).window(TumblingEventTimeWindows.of(Time.seconds(5))).apply(new JoinFunction<Tuple2<String, Order>, Tuple2<String, Item>, Tuple3<String, String, String>>() {
+            @Override
+            public Tuple3<String, String, String> join(Tuple2<String, Order> first, Tuple2<String, Item> second) throws Exception {
+              return new Tuple3<>("order", first.f0, second.f0);
+            }
+          });
 
       joinedStream.print();
 
