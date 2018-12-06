@@ -1,6 +1,7 @@
 package com.tank.stream;
 
 import com.tank.domain.Order;
+import com.tank.domain.Sleep;
 import lombok.val;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
@@ -26,7 +27,7 @@ public class OrderStream implements SourceFunction<String> {
       order.setPrice(random.nextInt(600));
       val jsonStr = jsonRw.writeValueAsString(order);
       ctx.collect(jsonStr);
-      Thread.sleep(3000);
+      Thread.sleep(Sleep.sleepTime);
     }
 
   }

@@ -1,6 +1,7 @@
 package com.tank.stream;
 
 import com.tank.domain.Item;
+import com.tank.domain.Sleep;
 import lombok.val;
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
@@ -27,7 +28,7 @@ public class ItemStream implements SourceFunction<String> {
         ctx.collect(jsonRw.writeValueAsString(item));
       }
 
-      Thread.sleep(3000);
+      Thread.sleep(Sleep.sleepTime);
     }
 
   }
@@ -40,6 +41,7 @@ public class ItemStream implements SourceFunction<String> {
   private volatile boolean isContinue = true;
 
   private Random random = new Random();
+  
   private final AtomicInteger itemNo = new AtomicInteger();
 
   private final ObjectMapper jsonRw = new ObjectMapper();
