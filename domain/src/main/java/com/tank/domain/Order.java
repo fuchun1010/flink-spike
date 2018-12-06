@@ -16,4 +16,9 @@ public class Order {
 
   private long timeStamp;
 
+  @Override
+  public String toString() {
+    return String.format("order -> order No is: %s", orderNo);
+  }
+
 }
