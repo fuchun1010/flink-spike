@@ -1,11 +1,17 @@
 package com.tank.handler;
 
 import lombok.val;
+import org.apache.flink.runtime.state.filesystem.FsStateBackend;
+import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.TimeCharacteristic;
+import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
 import java.util.Objects;
 
+/**
+ * @author fuchun
+ */
 public class StreamHandler {
 
   public void doAction(StreamAction streamAction) {
@@ -22,10 +28,21 @@ public class StreamHandler {
 
   private void initEnv(final StreamExecutionEnvironment env) {
     Objects.requireNonNull(env);
-    //TODO config checkpoint and so on
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
-    val maxAllowedCores = Runtime.getRuntime().availableProcessors();
-    env.setMaxParallelism(maxAllowedCores);
+    env.enableCheckpointing(5000);
+
+    env.getCheckpointConfig().setCheckpointingMode(CheckpointingMode.EXACTLY_ONCE);
+
+    env.getCheckpointConfig().setMinPauseBetweenCheckpoints(2000);
+
+    env.getCheckpointConfig().setCheckpointTimeout(60000);
+
+    env.getCheckpointConfig().setMaxConcurrentCheckpoints(1);
+
+    env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
+
+    //env.setStateBackend(new FsStateBackend("hdfs://localhost:9000/flink/checkpoints"));
+    env.setStateBackend(new FsStateBackend("hdfs://10.8.13.97:8020/flink/checkpoints"));
 
   }
 }

@@ -1,16 +1,12 @@
 package com.tank;
 
-import com.tank.domain.Item;
-import com.tank.domain.Order;
 import com.tank.handler.StreamHandler;
-import com.tank.join.StreamJoiner;
-import org.apache.flink.api.common.functions.JoinFunction;
-import org.apache.flink.api.java.functions.KeySelector;
+import com.tank.mapper.IntegerStateMap;
+import com.tank.stream.IntegerStream;
+import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
-import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
-import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
 
 /**
  * flink stream demo
@@ -20,37 +16,26 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 public class Stream {
   public static void main(String[] args) {
     final StreamHandler streamHandler = new StreamHandler();
-    final StreamJoiner joiner = new StreamJoiner();
     streamHandler.doAction(env -> {
-
-      final DataStream<Tuple2<String, Order>> orderStream = joiner.generateOrderStream(env);
-
-      final DataStream<Tuple2<String, Item>> itemStream = joiner.generateItemStream(env);
-
-      DataStream<Tuple3<String, Order, Item>> joinedStream = orderStream
-          .join(itemStream).where(new KeySelector<Tuple2<String, Order>, String>() {
+      env.addSource(new IntegerStream())
+          .map(new MapFunction<Tuple2<Integer, Long>, Tuple3<String, Integer, Long>>() {
             @Override
-            public String getKey(Tuple2<String, Order> order) throws Exception {
-              return order.f0;
+            public Tuple3<String, Integer, Long> map(Tuple2<Integer, Long> value) throws Exception {
+              return new Tuple3<>("1", value.f0, value.f1);
             }
           })
-          .equalTo(new KeySelector<Tuple2<String, Item>, String>() {
+          .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<Tuple3<String, Integer, Long>>() {
             @Override
-            public String getKey(Tuple2<String, Item> item) throws Exception {
-              return item.f0;
+            public long extractAscendingTimestamp(Tuple3<String, Integer, Long> element) {
+              return element.f2;
             }
           })
-          .window(TumblingEventTimeWindows.of(Time.seconds(5)))
-          .apply(new JoinFunction<Tuple2<String, Order>, Tuple2<String, Item>, Tuple3<String, Order, Item>>() {
-            @Override
-            public Tuple3<String, Order, Item> join(Tuple2<String, Order> first, Tuple2<String, Item> second) throws Exception {
-              return new Tuple3<>(first.f0, first.f1, second.f1);
-            }
-          });
+          .keyBy(0)
+          .map(new IntegerStateMap())
+          .keyBy(0)
+          .sum(1)
+          .print();
 
-      joinedStream.print();
-
-      
     });
   }
 }
