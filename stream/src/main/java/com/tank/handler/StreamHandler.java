@@ -1,12 +1,13 @@
 package com.tank.handler;
 
 import lombok.val;
-import org.apache.flink.runtime.state.filesystem.FsStateBackend;
+import org.apache.flink.contrib.streaming.state.RocksDBStateBackend;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
+import java.io.IOException;
 import java.util.Objects;
 
 /**
@@ -41,8 +42,13 @@ public class StreamHandler {
 
     env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
 
-    //env.setStateBackend(new FsStateBackend("hdfs://localhost:9000/flink/checkpoints"));
-    env.setStateBackend(new FsStateBackend("hdfs://10.8.13.97:8020/flink/checkpoints"));
+    val hdfsUrl = "hdfs://10.8.13.97:8020/flink/checkpoints";
+    // env.setStateBackend(new FsStateBackend("hdfs://10.8.13.97:8020/flink/checkpoints"));
 
+    try {
+      env.setStateBackend(new RocksDBStateBackend(hdfsUrl, true));
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }
