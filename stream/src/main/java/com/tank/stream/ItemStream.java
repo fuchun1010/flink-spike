@@ -8,6 +8,7 @@ import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 /**
  * @author fuchun
@@ -25,6 +26,7 @@ public class ItemStream implements SourceFunction<String> {
         item.setName("banana");
         item.setItemCode("i00" + itemNo.getAndIncrement());
         item.setTimeStamp(System.currentTimeMillis());
+        IntStream.range(1, 100).forEach(index -> System.out.println("*"));
         ctx.collect(jsonRw.writeValueAsString(item));
       }
 
@@ -41,7 +43,7 @@ public class ItemStream implements SourceFunction<String> {
   private volatile boolean isContinue = true;
 
   private Random random = new Random();
-  
+
   private final AtomicInteger itemNo = new AtomicInteger();
 
   private final ObjectMapper jsonRw = new ObjectMapper();

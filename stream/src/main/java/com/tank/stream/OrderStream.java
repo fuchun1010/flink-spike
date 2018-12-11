@@ -8,6 +8,7 @@ import org.apache.flink.streaming.api.functions.source.SourceFunction;
 
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 /**
  * @author fuchun
@@ -27,6 +28,8 @@ public class OrderStream implements SourceFunction<String> {
       order.setPrice(random.nextInt(600));
       val jsonStr = jsonRw.writeValueAsString(order);
       ctx.collect(jsonStr);
+      IntStream.range(1,100).forEach(i -> System.out.println("="));
+
       Thread.sleep(Sleep.sleepTime);
     }
 

@@ -1,11 +1,12 @@
 package com.tank.handler;
 
 import lombok.val;
-import org.apache.flink.runtime.state.filesystem.FsStateBackend;
 import org.apache.flink.streaming.api.CheckpointingMode;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.environment.CheckpointConfig;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
@@ -16,12 +17,15 @@ public class StreamHandler {
 
   public void doAction(StreamAction streamAction) {
     val env = StreamExecutionEnvironment.getExecutionEnvironment();
+    log.info("start init StreamExecutionEnvironment");
     this.initEnv(env);
     streamAction.doAction(env);
+    log.info("end init StreamExecutionEnvironment");
 
     try {
       env.execute("job");
     } catch (Exception e) {
+      log.error("execute stream exception, message is {}", e.getMessage());
       e.printStackTrace();
     }
   }
@@ -41,9 +45,10 @@ public class StreamHandler {
 
     env.getCheckpointConfig().enableExternalizedCheckpoints(CheckpointConfig.ExternalizedCheckpointCleanup.RETAIN_ON_CANCELLATION);
 
-    val checkPointUri = "hdfs://10.8.13.97:8020/flink/checkpoints";
-    env.setStateBackend(new FsStateBackend(checkPointUri));
-
+//    val checkPointUri = "hdfs://10.8.13.97:8020/flink/checkpoints";
+//    env.setStateBackend(new FsStateBackend(checkPointUri));
 
   }
+
+  private final Logger log = LoggerFactory.getLogger(StreamHandler.class);
 }
