@@ -26,7 +26,8 @@ public class ItemStream implements SourceFunction<String> {
         item.setName("banana");
         item.setItemCode("i00" + itemNo.getAndIncrement());
         item.setTimeStamp(System.currentTimeMillis());
-        IntStream.range(1, 100).forEach(index -> System.out.println("*"));
+        val split = IntStream.range(1, 100).mapToObj(index -> "=").reduce("", (a, b) -> a + b);
+        System.out.println(split + ":item:" + orders);
         ctx.collect(jsonRw.writeValueAsString(item));
       }
 

@@ -12,9 +12,12 @@ import org.apache.flink.api.common.typeinfo.TypeHint;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.typeutils.TupleTypeInfo;
+import org.apache.flink.streaming.api.datastream.AllWindowedStream;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor;
+import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.table.api.Table;
 import org.apache.flink.table.api.TableEnvironment;
 import org.apache.flink.table.api.Types;
@@ -43,6 +46,9 @@ public class JoinTable {
             }
           }).keyBy("orderNo");
 
+      final AllWindowedStream<Order, TimeWindow> orderWindow = orderDataStream.timeWindowAll(Time.seconds(10));
+
+
       final DataStream<Item> itemStream = env.addSource(new ItemStream())
           .map(jsonStr -> JsonConverter.toObj(jsonStr, Item.class))
           .filter(item -> !Objects.isNull(item)).assignTimestampsAndWatermarks(new AscendingTimestampExtractor<Item>() {
@@ -51,6 +57,8 @@ public class JoinTable {
               return element.getTimeStamp();
             }
           }).keyBy("orderNo");
+
+      final AllWindowedStream<Item, TimeWindow> itemWindow = itemStream.timeWindowAll(Time.seconds(10));
 
       final StreamTableEnvironment tableEnv = TableEnvironment.getTableEnvironment(env);
 

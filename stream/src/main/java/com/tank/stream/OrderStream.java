@@ -28,8 +28,8 @@ public class OrderStream implements SourceFunction<String> {
       order.setPrice(random.nextInt(600));
       val jsonStr = jsonRw.writeValueAsString(order);
       ctx.collect(jsonStr);
-      IntStream.range(1,100).forEach(i -> System.out.println("="));
-
+      val split = IntStream.range(1, 100).mapToObj(index -> "*").reduce("", (a, b) -> a + b);
+      System.out.println(split);
       Thread.sleep(Sleep.sleepTime);
     }
 
